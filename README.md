@@ -41,14 +41,58 @@ Local-only: startup requires Development/demo mode (set by `run.sh`), and reques
 
 ## Tests
 
-```bash
-# One-time browser installation; on Linux use: npx playwright install --with-deps chromium
-(cd client && npx playwright install chromium)
-bash scripts/test.sh
+Backend tests use [xUnit with `dotnet test`](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-csharp-with-xunit). Angular/TypeScript unit tests use [Vitest through Angular CLI](https://angular.dev/guide/testing), and browser E2E tests use [Playwright Test](https://playwright.dev/docs/test-cli). Both JavaScript test frameworks are npm dev dependencies installed by `npm ci`; no global test runner is needed.
+
+Start in the project root. Run the unit-test block first to install dependencies. `dotnet test` automatically restores and builds the backend test project.
+
+**Windows — Command Prompt: unit tests (no Bash required)**
+
+```bat
+npm ci --prefix client
+dotnet test tests\WidgetWorks.Tests
+npm test --prefix client
 ```
 
-Runs the build, xUnit authorization/message checks, Angular/Vitest component tests and Playwright Chromium flows. E2E uses port 5081 and a separate database under ignored `server/App_Data`; no running demo is required. Failure traces/screenshots: `client/test-results`; HTML report: `client/playwright-report`.
+**Windows — Command Prompt: E2E tests (no Bash required)**
 
-Verified on macOS ARM64 with Node 24.22.2, npm 11.19.1 and .NET SDK 10.0.402: build, normal run, 10 backend tests, 9 Angular tests and 6 Chromium E2E flows. Windows, Linux and the optional live-development command below have not yet been exercised; platform instructions are based on inspection of the Bash scripts.
+```bat
+npm run build --prefix client
+if exist server\wwwroot rmdir /s /q server\wwwroot
+mkdir server\wwwroot
+xcopy client\dist\client\browser server\wwwroot /E /I /Y
+cd client
+npx playwright install chromium
+npm run e2e
+cd ..
+```
+
+**Linux / macOS — Terminal: unit tests**
+
+```bash
+npm ci --prefix client
+dotnet test tests/WidgetWorks.Tests
+npm test --prefix client
+```
+
+**Linux / macOS — Terminal: E2E tests**
+
+```bash
+npm run build --prefix client
+rm -rf server/wwwroot
+mkdir -p server/wwwroot
+cp -R client/dist/client/browser/. server/wwwroot/
+cd client
+npx playwright install chromium
+# On Linux, install browser system dependencies when needed:
+# npx playwright install --with-deps chromium
+npm run e2e
+cd ..
+```
+
+The E2E preparation replaces only generated frontend assets in `server/wwwroot`; runtime data is elsewhere. Playwright starts/stops the .NET test server automatically on port 5081 and uses a separate SQLite database under ignored `server/App_Data`. Leave that port free; no running demo is required. Browser installation is needed initially and after Playwright browser-version updates. Failure traces/screenshots: `client/test-results`; HTML report: `client/playwright-report`. On Linux/macOS, `bash scripts/test.sh` also builds and runs all three suites after browser installation.
+
+Coverage: 10 backend cases check conversation ownership/support roles and chat-message boundaries; 9 Angular tests check form states, authentication errors, inert CMS text, unsent-message preservation, antiforgery headers and HTTP failures; 6 Chromium E2E flows cover navigation/responsive layout, accounts/exchanges/toasts, password recovery, two-session chat/reconnect/isolation, contact/CMS persistence and publication, and CSRF/input rejection. These counts are test cases, not a measured code-coverage percentage; persistence checks do not include a server restart.
+
+Verified on macOS ARM64 with Node 24.22.2, npm 11.19.1 and .NET SDK 10.0.402. Native Windows CMD, Linux, Firefox/WebKit and optional live-development mode have not been exercised. Windows commands were checked against the scripts and configuration, not executed on Windows.
 
 For live frontend development: run `bash scripts/run.sh` in one terminal, then `npm start --prefix client` in another; open http://localhost:4200.
