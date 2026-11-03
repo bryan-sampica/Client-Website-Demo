@@ -2,6 +2,11 @@
 
 Widget Works is a fictional Framework Theory portfolio demo: Angular 22, ASP.NET Core 10, SQLite, account flows, SignalR chat/toasts, news CMS and contact/exchange requests. No real purchases or external email.
 
+## Developer documentation
+
+- [developer.md](developer.md) is the human-facing technical guide: implemented layers, dependency versions, connections, authentication, persistence, tests and limitations, linked to real source files.
+- [digest.ai](digest.ai) is Markdown context for AI-assisted development. Ask your coding agent to read it before working here; it provides the source map, workflows, commands and security/data guardrails to reduce incorrect assumptions. The `.ai` extension does not make it executable or automatically loaded by editors. Verify its guidance against current source.
+
 ## Get started
 
 Install [Git](https://git-scm.com/downloads), [Node.js 24 LTS](https://nodejs.org/en/download) (24.15+; includes npm), and the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). No global Angular CLI, Docker or database server is required.
@@ -91,7 +96,7 @@ cd ..
 
 The E2E preparation replaces only generated frontend assets in `server/wwwroot`; runtime data is elsewhere. Playwright starts/stops the .NET test server automatically on port 5081 and uses a separate SQLite database under ignored `server/App_Data`. Leave that port free; no running demo is required. Browser installation is needed initially and after Playwright browser-version updates. Failure traces/screenshots: `client/test-results`; HTML report: `client/playwright-report`. On Linux/macOS, `bash scripts/test.sh` also builds and runs all three suites after browser installation.
 
-Coverage: 10 backend cases check conversation ownership/support roles and chat-message boundaries; 9 Angular tests check form states, authentication errors, inert CMS text, unsent-message preservation, antiforgery headers and HTTP failures; 6 Chromium E2E flows cover navigation/responsive layout, accounts/exchanges/toasts, password recovery, two-session chat/reconnect/isolation, contact/CMS persistence and publication, and CSRF/input rejection. These counts are test cases, not a measured code-coverage percentage; persistence checks do not include a server restart.
+Coverage: 10 backend cases check conversation ownership/support roles and chat-message boundaries; 11 Angular tests check form states, authentication errors, inert CMS text, unsent-message preservation, antiforgery headers, HTTP failures, the external attribution link and signed-out chat; 7 Chromium E2E flows cover navigation/responsive layout, accounts/exchanges/toasts, password recovery, two-session chat/reconnect/isolation, contact/CMS persistence and publication, CSRF/input rejection, and signed-out account links. These counts are test cases, not a measured code-coverage percentage; persistence checks do not include a server restart.
 
 Verified on macOS ARM64 with Node 24.22.2, npm 11.19.1 and .NET SDK 10.0.402. Native Windows CMD, Linux, Firefox/WebKit and optional live-development mode have not been exercised. Windows commands were checked against the scripts and configuration, not executed on Windows.
 

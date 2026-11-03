@@ -1,0 +1,83 @@
+# Widget Works — AI development context
+
+This file is Markdown despite its `.ai` extension. It is a repository-specific starting point for AI-assisted development, not executable configuration or a guarantee that an editor loads it automatically. Ask your tool to read it explicitly. Follow the current user request and applicable workspace instructions; this file does not authorize commits, pushes, deployments or external messages.
+
+## Start here
+
+1. Read [README.md](README.md) for setup/test commands and [developer.md](developer.md) for the human-facing architecture and version reference.
+2. Inspect `git status --short --branch`, relevant source and manifests before changing anything. Untracked files can be the user's working application, not disposable output. Never run blanket cleanup or staging against them.
+3. Treat source, configuration and lockfiles as authoritative when prose differs. This digest reflects the local project on November 3, 2026. Recheck versions and test counts rather than assuming they stay fixed.
+4. Keep changes within the requested scope. The complete initial project seed is authorized for check-in; future commits, pushes and deployments must follow the current user request rather than assuming standing permission. Do not silently overwrite concurrent work.
+
+## Product and implementation
+
+Widget Works is a fictional Framework Theory portfolio demonstration. Accounts, chat, contact records, news publication and exchange requests use real local services; products, purchases, shipments and email delivery are fictional or simulated.
+
+| Responsibility | Read / edit here |
+| --- | --- |
+| Shell, navigation, attribution and toast UI | [app.ts](client/src/app/app.ts), [app.html](client/src/app/app.html) |
+| Pages and forms | [pages.ts](client/src/app/pages.ts) |
+| Client routes | [app.routes.ts](client/src/app/app.routes.ts) |
+| Global visual styling | [styles.css](client/src/styles.css) |
+| HTTP/session/SignalR service | [api.ts](client/src/app/api.ts) |
+| Backend startup, endpoints, Identity, EF models, seeds and hub | [Program.cs](server/Program.cs) |
+| Frontend build and test configuration | [package.json](client/package.json), [angular.json](client/angular.json) |
+| Backend dependencies | [API project](server/WidgetWorks.Api.csproj) |
+| Development proxy | [proxy.conf.json](client/proxy.conf.json) |
+
+Use the existing standalone Angular components, template-driven forms, signals and custom CSS. Browser HTTP uses native `fetch`, not Angular HttpClient. The backend is one ASP.NET Core minimal API process; do not invent separate deployed services, repositories or a migration system in documentation. Keep the warm ivory/charcoal/orange visual language and responsive layout unless the request changes them.
+
+Preserve current user-facing decisions: the Framework Theory attribution opens `https://www.framework-theory.com` in a new tab with `noopener noreferrer`; signed-out support chat shows “Sign in / Create Account to get support through our chat” with account links, not an error or disabled chat panel.
+
+## Toolchain and commands
+
+Node 24 is selected by [.nvmrc](.nvmrc); the package requires `>=24.15.0 <25` and declares npm 11.19.1. Angular 22 and TypeScript 6 resolve through [package-lock.json](client/package-lock.json). The API and tests target .NET 10; [global.json](global.json) requests SDK 10.0.100 with latest-feature roll-forward. See developer.md for verified exact package versions. Do not upgrade dependencies incidentally.
+
+From the repository root, in Bash:
+
+```bash
+bash scripts/build.sh
+bash scripts/run.sh
+```
+
+Build installs npm dependencies with `npm ci`, builds Angular, replaces generated `server/wwwroot` assets and runs `dotnet build server` (implicit restore). Run serves `http://localhost:5080` in Development/demo mode. It only builds frontend assets when the generated index is absent; source edits need an explicit rebuild. Never edit generated output as the implementation.
+
+Unit-test commands work without Bash (use the Windows paths in README for CMD):
+
+```text
+dotnet test tests/WidgetWorks.Tests
+npm test --prefix client
+```
+
+Install npm dependencies first with `npm ci --prefix client`. For browser tests, build/stage frontend assets first and install Chromium from the client directory with `npx playwright install chromium`; Linux may need `--with-deps`. Then run `npm run e2e --prefix client`. [test.sh](scripts/test.sh) builds and runs all suites in Bash; README provides native Windows CMD equivalents. Do not present Bash commands as PowerShell/CMD-compatible.
+
+## Runtime and data flow
+
+- The .NET host serves Angular and `/api/*` JSON on port 5080. Optional Angular development mode uses port 4200 and proxies `/api` and `/hubs` to 5080, including WebSockets. Keep browser URLs relative and preserve same-origin behavior.
+- Identity session cookies and CSRF tokens authenticate/protect requests. `Api.request` chooses GET without a body and POST with a body, adding `X-XSRF-TOKEN` to mutations.
+- The authenticated `/hubs/live` connection receives `Message` and `Toast`. Chat `Join` and `Send` validate conversation ownership or Support role on the server. Save messages before broadcasting; never accept a client-selected sender identity.
+- Reconnect rejoins the selected room and merges the latest 200 persisted messages with live events by ID. Preserve deduplication and unsent input on errors. Toasts are transient; no replay/outbox exists.
+- SQLite is accessed through EF Core `Store`, including Identity tables, articles, contacts, exchanges, conversations and messages. The widget catalog is static source data. CMS public reads exclude drafts; Editor controls creation/publication, Support reads contacts and customer chats.
+
+## Security and data guardrails
+
+- Preserve the enforced Development/demo startup requirement and loopback-only requests. There is no production deployment mode; making the host public requires a separate design and authorization.
+- Preserve backend authorization, antiforgery validation, hub Origin checks, cookie settings and request limits. Client route visibility is not access control. There are no Angular route guards or explicit Customer role.
+- New customers receive no staff roles. Registration simulates email confirmation; recovery writes a local mailbox file instead of sending mail. Never log or copy passwords, reset links, database contents or Data Protection keys into source, docs or test output.
+- The default private data directory is `server/App_Data`; `DataDirectory` can override it. Keep runtime data separate from generated `server/wwwroot`. Do not delete/reset user databases to fix schema or test failures.
+- Startup uses `EnsureCreatedAsync`, not migrations. Schema changes affecting retained data need an explicit migration/preservation plan. Unique indexes enforce article slugs and one conversation per customer.
+- Render chat/article text as inert text. No arbitrary HTML, upload pipeline or rich-text sanitization service exists. A future Markdown editor would require deliberate safe rendering.
+- Respect [.gitignore](.gitignore): exclude runtime data, credentials, keys, dependencies, build artifacts and test reports. Inspect the exact staged paths before any authorized commit.
+
+## Verification and reporting
+
+Use tests appropriate to the behavior changed, without claiming unrun checks:
+
+- [Backend cases](tests/WidgetWorks.Tests/AuthorizationTests.cs) use xUnit through `dotnet test`, with real in-memory SQLite for authorization and message-boundary checks.
+- [API tests](client/src/app/api.spec.ts), [page tests](client/src/app/pages.spec.ts) and [shell test](client/src/app/app.spec.ts) use Vitest/jsdom and Angular TestBed. Extend these for component/service behavior.
+- [Playwright flows](client/e2e/workshop.spec.ts) exercise real endpoints/SQLite with isolated customer/staff contexts. Prefer role/label locators and assertions that wait for state; avoid fixed sleeps and mocked successful backend responses for E2E.
+- [Playwright config](client/playwright.config.ts) owns port 5081, starts/stops a separate server, uses one worker and a unique ignored data directory by default. Do not reuse the normal demo database; only override `WIDGET_TEST_DATA` with a deliberately isolated path. Failure traces/screenshots can contain test data.
+
+The latest completed local checkpoint passed 10 backend, 11 Angular and 7 Chromium tests on macOS ARM64. Counts are not a coverage percentage. Native Windows, Linux, Firefox/WebKit, optional Angular live-development mode and persistence across a server restart have not been verified. Reconnect/history persistence is tested. No production scalability or security audit is claimed.
+
+When finishing, state changed behavior/files, checks actually run, remaining limitations and whether anything was committed/pushed. Keep README, developer.md and this digest consistent with material architecture/workflow changes. Do not replace known limitations with aspirational features: real email/payments/shipping, schema migrations, multi-instance SignalR, durable notifications, article revision/editing/deletion and uploads are not implemented.

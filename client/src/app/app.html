@@ -1,0 +1,8 @@
+<div class="demo-strip">A FICTIONAL COMPANY. A REAL WORKING DEMO. <span><a href="https://www.framework-theory.com" target="_blank" rel="noopener noreferrer">Crafted by Framework Theory ↗</a></span></div>
+<header><a class="brand" routerLink="/" aria-label="Widget Works home"><span class="brand-icon">✳</span> widget<span class="brand-light">works</span><sup>®</sup></a>
+<nav aria-label="Main navigation"><a routerLink="/widgets" routerLinkActive="active">The widgets</a><a routerLink="/exchange" routerLinkActive="active">Second life</a><a routerLink="/news" routerLinkActive="active">Field notes</a><a routerLink="/support" routerLinkActive="active">Support</a></nav>
+<a class="account-link" [routerLink]="api.user() ? '/portal' : '/account/login'">{{api.user() ? 'Your workshop' : 'Sign in'}} ↗</a></header>
+@if(error){<p class="notice error" role="alert">{{error}}</p>}
+<main id="main"><router-outlet /></main>
+<footer><div><a class="brand" routerLink="/">✳ widgetworks</a><p>Small things. Better possibilities.</p></div><div><a routerLink="/releases">What's new</a><a routerLink="/contact">Say hello</a><a routerLink="/portal">Your account</a>@if(api.user()){<button class="text-button" (click)="logout()">Sign out</button>}</div><small>Framework Theory portfolio · Fictional products · No payments or shipments<br>Local demo · Angular / .NET / SQLite</small></footer>
+@if(api.toast(); as toast){<aside class="toast" role="status" aria-live="polite"><span class="live-dot"></span><div><strong>{{toast.title}}</strong><p>{{toast.message}}</p><small>Delivered live · SignalR</small></div><button (click)="api.toast.set(null)" aria-label="Dismiss notification">×</button></aside>}
