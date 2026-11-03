@@ -10,7 +10,16 @@ Install [Git](https://git-scm.com/downloads), [Node.js 24 LTS](https://nodejs.or
 - **Linux:** use a terminal with Bash and standard Unix tools installed.
 - **Windows:** install [Git for Windows](https://gitforwindows.org/) and use its **Git Bash** terminal, with the Windows Node.js and .NET SDK installations available on PATH. The scripts require Bash and Unix tools; do not run them directly in PowerShell or Command Prompt. This route has not yet been tested on Windows.
 
-Run these commands in the terminal for your platform:
+**Windows — Git Bash**
+
+```bash
+git clone https://github.com/bryan-sampica/Client-Website-Demo.git Client-Website-Example
+cd Client-Website-Example
+bash scripts/build.sh
+bash scripts/run.sh
+```
+
+**Linux / macOS — Terminal (Bash)**
 
 ```bash
 git clone https://github.com/bryan-sampica/Client-Website-Demo.git Client-Website-Example
